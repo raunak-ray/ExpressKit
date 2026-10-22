@@ -1,5 +1,5 @@
-import { cancel, isCancel, select, text } from "@clack/prompts";
-import type { Language } from "../types.js";
+import { cancel, confirm, isCancel, select, text } from "@clack/prompts";
+import type { Language } from "../types";
 
 export class PromptService {
   private readonly LANGUAGE_OPTIONS: {
@@ -22,7 +22,7 @@ export class PromptService {
       },
     });
 
-    this.handleCancel(response);
+    this.handleCancel<string>(response);
 
     return response.trim();
   }
@@ -34,16 +34,24 @@ export class PromptService {
       initialValue: "javascript",
     });
 
-    this.handleCancel(response);
-
-    if (response !== "javascript" && response !== "typescript") {
-      throw new Error("Invalid language selection.");
-    }
+    this.handleCancel<Language>(response);
 
     return response;
   }
 
-  private handleCancel(response: unknown): asserts response is string {
+  public async askShouldInstall(): Promise<boolean> {
+    const response = await confirm({
+      message: "Install dependencies?",
+      initialValue: true,
+    });
+
+    this.handleCancel<boolean>(response);
+
+    return response;
+  }
+
+  // Catches Ctrl+C / Esc so the CLI exits cleanly instead of crashing.
+  private handleCancel<T>(response: unknown): asserts response is T {
     if (isCancel(response)) {
       cancel("Project setup cancelled.");
       process.exit(0);

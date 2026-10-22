@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // Imports / modules
+    // "bundler" is THE setting that lets you import WITHOUT extensions:
+    //   import app from "./app"        (not "./app.ts")
+    "module": "esnext",            // emit modern ES module syntax
+    "moduleResolution": "bundler", // resolve imports without ".ts" extensions
+    "moduleDetection": "force",    // treat every file as an ES module (no CommonJS guessing)
+    "esModuleInterop": true,       // allow normal default imports from CJS packages (express)
+    "verbatimModuleSyntax": true,  // keep imports exactly as written; type-only imports must use "import type"
+
+    // Language level
+    "target": "esnext",            // allow the newest JS features, no downleveling
+
+    // Type checking
+    "strict": true,                // turn on all strict type checks
+    "noUnusedLocals": true,        // error on declared-but-unused variables
+    "noUnusedParameters": true,    // error on unused function parameters
+    "skipLibCheck": true,          // don't type-check ".d.ts" files inside node_modules (faster)
+
+    // Runtime types
+    "types": ["node"],             // auto-include ONLY Node types (no stray umbrella types)
+
+    // Output
+    "noEmit": true                 // tsx runs the code directly, so tsc only type-checks, never writes files
+  },
+  // Files in scope
+  "include": ["src"],               // the compiler only looks at src/
+  "exclude": ["node_modules"]       // never scan dependencies
+}
