@@ -1,6 +1,7 @@
 export type Language = "javascript" | "typescript";
 
-export type ProjectConfig = {
-  projectName: string;
-  language: Language;
+export type TemplateFile = {
+  fileName: string;
+  /** Folder inside the new project; empty (default) means the project root. */
+  destination?: string;
 };
