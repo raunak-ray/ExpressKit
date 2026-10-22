@@ -1,3 +1,4 @@
+import { spinner } from "@clack/prompts";
 import { FileService } from "./services/file.service";
 import { ProjectService } from "./services/project.service";
 import { PromptService } from "./services/prompts.service";
@@ -6,23 +7,31 @@ async function main(): Promise<void> {
   const promptService = new PromptService();
   const fileService = new FileService();
 
-  // 1. Ask what to create
+  // 1. Collect every answer first — the spinner only starts after all prompts are done
   const projectName = await promptService.askProjectName();
   const language = await promptService.askLanguage();
+  const shouldCreateCentralError = await promptService.askCentralErrorHandler();
   const shouldInstallDependencies = await promptService.askShouldInstall();
 
-  // 2. Create the project folder
-  const projectPath = await fileService.createDirectory(projectName);
+  // 2. Run the commands behind a spinner
+  const loading = spinner();
+  loading.start("Creating project");
 
-  // 3. Copy the template files for the chosen language
-  const projectService = new ProjectService(projectPath, language);
-  await projectService.basicProjectSetup();
+  try {
+    const projectPath = await fileService.createDirectory(projectName);
+    const projectService = new ProjectService(projectPath, language);
+    await projectService.createProject(shouldCreateCentralError);
 
-  if (shouldInstallDependencies) {
-    await projectService.runInstallCommand();
+    if (shouldInstallDependencies) {
+      loading.message("Installing dependencies");
+      await projectService.runInstallCommand();
+    }
+
+    loading.stop(`Created ${language} project at ${projectPath}`);
+  } catch (error) {
+    loading.error("Project creation failed");
+    throw error;
   }
-
-  console.log(`Created ${language} project at ${projectPath}`);
 }
 
 main().catch((err: unknown) => {
