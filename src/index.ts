@@ -1,18 +1,30 @@
-import { createDirectory, readFileContents, readTemplate } from "./operations.js";
-import { promptLanguageSelection, promptProjectName } from "./prompts.js";
+import { FileService } from "./services/file.service.js";
+import { PromptService } from "./services/prompts.service.js";
 
 async function main(): Promise<void> {
-  const projectName = await promptProjectName();
-  const language = await promptLanguageSelection();
+  const promptService = new PromptService();
+  const fileService = new FileService();
 
-  console.log("Project name:", projectName);
-  console.log("Selected language:", language);
+  const projectName = await promptService.askProjectName();
+  const selectedLanguage = await promptService.askLanguage();
 
-  // await createDirectory(projectName);
-  console.log(await readTemplate(language, "server.js"))
+  const projectPath = await fileService.createDirectory(projectName);
+
+  await fileService.createFiles(projectPath, selectedLanguage, [
+    // { fileName: "package.json" },
+    { fileName: "server.js", destination: "src" },
+    { fileName: "app.js", destination: "src" },
+  ]);
+
+  console.log(`Project directory: ${projectPath}`);
+  console.log(`Selected language: ${selectedLanguage}`);
+  console.log("Project created successfully!");
 }
 
-main().catch((err) => {
-  console.error("Something went wrong: ", err);
+main().catch((err: unknown) => {
+  const message =
+    err instanceof Error ? err.message : "An unexpected error occurred";
+
+  console.error(`ExpressKit: ${message}`);
   process.exitCode = 1;
-})
+});
