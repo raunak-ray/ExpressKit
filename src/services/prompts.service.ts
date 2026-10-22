@@ -39,6 +39,17 @@ export class PromptService {
     return response;
   }
 
+  public async askCentralErrorHandler(): Promise<boolean> {
+    const response = await confirm({
+      message: "Create central error handling middleware?",
+      initialValue: true,
+    })
+
+    this.handleCancel<boolean>(response);
+
+    return response;
+  }
+
   public async askShouldInstall(): Promise<boolean> {
     const response = await confirm({
       message: "Install dependencies?",

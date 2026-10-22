@@ -46,8 +46,14 @@ export class FileService {
 
     // Create all files in parallel, then report every failure at once.
     const results = await Promise.allSettled(
-      files.map(({ fileName, destination = "" }) =>
-        this.copyTemplateFile(projectDirectory, fileName, language, destination),
+      files.map(({ fileName, destination = "", source = destination }) =>
+        this.copyTemplateFile(
+          projectDirectory,
+          fileName,
+          language,
+          destination,
+          source,
+        ),
       ),
     );
 
@@ -85,10 +91,12 @@ export class FileService {
     fileName: string,
     language: Language,
     destination: string,
+    source: string,
   ): Promise<void> {
     const templateFilePath = path.resolve(
       this.templatePath,
       language,
+      source,
       fileName,
     );
 
