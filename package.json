@@ -1,15 +1,17 @@
 {
-  "name": "create-expresskit",
+  "name": "express-project-init",
   "version": "1.0.0",
-  "description": "Scaffold a clean Express API with JavaScript or TypeScript in seconds.",
+  "description": "Create production-ready Express.js API projects with JavaScript or TypeScript using clean, reusable starter templates.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "create-expresskit": "./dist/index.js"
+    "express-project-init": "./dist/index.js"
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
@@ -33,11 +35,14 @@
   "keywords": [
     "express",
     "expressjs",
-    "cli",
-    "scaffold",
-    "generator",
+    "express-generator",
+    "express-cli",
+    "nodejs",
+    "api-generator",
+    "backend",
+    "project-scaffolding",
     "boilerplate",
-    "starter",
+    "starter-template",
     "typescript",
     "javascript"
   ],
