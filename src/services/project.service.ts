@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
-import type { ProjectAnswers } from "../types";
-import { FileService } from "./file.service";
-import { TemplateService } from "./template.service";
+import type { ProjectAnswers } from "../types.js";
+import { FileService } from "./file.service.js";
+import { TemplateService } from "./template.service.js";
 
 export class ProjectService {
   private readonly projectPath: string;

@@ -1,13 +1,13 @@
 import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FEATURES, type Feature } from "../features";
+import { FEATURES, type Feature } from "../features.js";
 import type {
   Language,
   PackageFragment,
   ProjectAnswers,
   ProjectFileMap,
-} from "../types";
+} from "../types.js";
 
 type PackageJson = PackageFragment & Record<string, unknown>;
 

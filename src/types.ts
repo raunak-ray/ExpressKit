@@ -1,4 +1,4 @@
-import type { FeatureId } from "./features";
+import type { FeatureId } from "./features.js";
 
 export type Language = "javascript" | "typescript";
 

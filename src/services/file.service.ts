@@ -1,6 +1,6 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { ProjectFileMap } from "../types";
+import type { ProjectFileMap } from "../types.js";
 
 export class FileService {
   public async createDirectory(projectName: string): Promise<string> {

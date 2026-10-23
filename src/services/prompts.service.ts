@@ -1,6 +1,6 @@
 import { cancel, confirm, isCancel, select, text } from "@clack/prompts";
-import { FEATURES, type Feature } from "../features";
-import type { FeatureAnswers, Language } from "../types";
+import { FEATURES, type Feature } from "../features.js";
+import type { FeatureAnswers, Language } from "../types.js";
 
 export class PromptService {
   private readonly LANGUAGE_OPTIONS: {
