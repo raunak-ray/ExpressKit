@@ -1,9 +1,11 @@
+#!/usr/bin/env node
+
 import { spinner } from "@clack/prompts";
-import type { ProjectAnswers } from "./types";
-import { FileService } from "./services/file.service";
-import { ProjectService } from "./services/project.service";
-import { PromptService } from "./services/prompts.service";
-import { TemplateService } from "./services/template.service";
+import type { ProjectAnswers } from "./types.js";
+import { FileService } from "./services/file.service.js";
+import { ProjectService } from "./services/project.service.js";
+import { PromptService } from "./services/prompts.service.js";
+import { TemplateService } from "./services/template.service.js";
 
 async function main(): Promise<void> {
   const promptService = new PromptService();

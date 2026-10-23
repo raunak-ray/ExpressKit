@@ -1,22 +1,54 @@
 {
-  "name": "expresskit",
+  "name": "create-expresskit",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Scaffold a clean Express API with JavaScript or TypeScript in seconds.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "create-expresskit": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc"
+    "clean": "node -e \"const fs=require('node:fs'); for (const p of ['dist','tsconfig.tsbuildinfo']) fs.rmSync(p,{recursive:true,force:true})\"",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run clean && npm run build",
+    "start": "node dist/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raunak-ray/ExpressKit.git"
+  },
+  "homepage": "https://github.com/raunak-ray/ExpressKit#readme",
+  "bugs": {
+    "url": "https://github.com/raunak-ray/ExpressKit/issues"
+  },
+  "keywords": [
+    "express",
+    "expressjs",
+    "cli",
+    "scaffold",
+    "generator",
+    "boilerplate",
+    "starter",
+    "typescript",
+    "javascript"
+  ],
+  "author": "Raunak Ray",
+  "license": "MIT",
   "dependencies": {
-    "@clack/prompts": "^1.8.1",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "@clack/prompts": "^1.8.1"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5"
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

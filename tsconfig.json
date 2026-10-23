@@ -1,38 +1,30 @@
 {
   "compilerOptions": {
     // ─────── Imports / modules ───────
-    // "bundler" fixes the old ".js" extension requirement: relative imports
-    // can now be written WITHOUT extensions (e.g. "./services/file.service").
-    "module": "esnext",            // emit modern ES module syntax
-    "moduleResolution": "bundler", // resolve imports without ".js"/".ts" extensions
-    "moduleDetection": "force",    // treat every file as an ES module (no CommonJS guessing)
-    "esModuleInterop": true,       // allow normal default imports from CJS packages
-    "verbatimModuleSyntax": true,  // keep imports exactly as written; type-only imports must use "import type"
+    // NodeNext matches how Node actually loads this ESM package at runtime.
+    // Relative imports must include ".js" (even in .ts source files).
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force", // treat every file as an ES module
+    "esModuleInterop": true, // allow normal default imports from CJS packages
+    "verbatimModuleSyntax": true, // keep imports exactly as written; type-only imports must use "import type"
 
     // ─────── Language level ───────
-    "target": "esnext",            // allow the newest JS features, no downleveling
+    "target": "esnext", // allow the newest JS features, no downleveling
 
     // ─────── Type checking ───────
-    "strict": true,                // turn on all strict type checks
-    "noUnusedLocals": true,        // error on declared-but-unused variables
-    "noUnusedParameters": true,    // error on unused function parameters
-    "skipLibCheck": true,          // don't type-check ".d.ts" files inside node_modules (faster)
-    "types": ["node"],             // auto-include ONLY Node types
+    "strict": true, // turn on all strict type checks
+    "noUnusedLocals": true, // error on declared-but-unused variables
+    "noUnusedParameters": true, // error on unused function parameters
+    "skipLibCheck": true, // don't type-check ".d.ts" files inside node_modules
+    "types": ["node"], // auto-include ONLY Node types
 
     // ─────── Build output ───────
-    "rootDir": "./src",            // source lives here (templates have their own tsconfig)
-    "outDir": "./dist",            // compiled output goes here
-    "sourceMap": true,             // emit .map files for debugging
-    "declarationMap": true,        // map declarations back to source
-    "composite": true,             // enable incremental builds / project references
-
-    // ─────── Path aliases ───────
-    // Lets you import like "@/services/file.service" instead of long relative paths.
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "rootDir": "./src", // source lives here (templates have their own tsconfig)
+    "outDir": "./dist", // compiled output goes here
+    "sourceMap": true // emit .map files for debugging
   },
   // ─────── Files in scope ───────
-  "include": ["src"],               // src only — templates keep their own tsconfig
+  "include": ["src"], // src only — templates keep their own tsconfig
   "exclude": ["node_modules", "dist", "templates"]
 }
