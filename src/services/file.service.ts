@@ -1,18 +1,8 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { Language, TemplateFile } from "../types";
+import type { ProjectFileMap } from "../types";
 
 export class FileService {
-  private readonly templatePath: string;
-
-  constructor() {
-    const serviceDirectory = path.dirname(fileURLToPath(import.meta.url));
-
-    // templates/ sits two levels up from src/services (and dist/services).
-    this.templatePath = path.resolve(serviceDirectory, "../../templates");
-  }
-
   public async createDirectory(projectName: string): Promise<string> {
     const dirPath = path.resolve(process.cwd(), projectName);
 
@@ -30,52 +20,89 @@ export class FileService {
     }
   }
 
-  public async createFiles(
+  /**
+   * Writes the complete, already-composed project in one pass.
+   * Every destination is checked before the first file is written.
+   */
+  public async writeFiles(
     projectDirectory: string,
-    language: Language,
-    files: TemplateFile[],
+    files: ProjectFileMap,
   ): Promise<void> {
-    // Refuse before writing anything if the project files are already there.
-    const existingFiles = await this.getExistingFiles(projectDirectory, files);
+    const entries = Object.entries(files);
+
+    if (entries.length === 0) {
+      throw new Error("No files to create.");
+    }
+
+    const destinations = entries.map(([relativePath, contents]) => ({
+      relativePath,
+      contents,
+      absolutePath: this.resolveProjectPath(
+        projectDirectory,
+        relativePath,
+      ),
+    }));
+
+    const existingFiles = await this.getExistingFiles(destinations);
 
     if (existingFiles.length > 0) {
       throw new Error(
-        `Cannot create project: these files already exist in "${projectDirectory}": ${existingFiles.join(", ")}`,
+        `Cannot create project: these files already exist in "${projectDirectory}": ${existingFiles.join(
+          ", ",
+        )}`,
       );
     }
 
-    // Create all files in parallel, then report every failure at once.
     const results = await Promise.allSettled(
-      files.map(({ fileName, destination = "", source = destination }) =>
-        this.copyTemplateFile(
-          projectDirectory,
-          fileName,
-          language,
-          destination,
-          source,
-        ),
+      destinations.map(({ absolutePath, contents }) =>
+        this.writeFile(absolutePath, contents),
       ),
     );
 
-    const failures = results.filter((result) => result.status === "rejected");
+    const failures = results.filter(
+      (result) => result.status === "rejected",
+    );
 
     if (failures.length > 0) {
       throw new Error(
-        `Failed to create ${failures.length} of ${files.length} files.`,
+        `Failed to create ${failures.length} of ${entries.length} files.`,
         { cause: failures.map((failure) => failure.reason) },
       );
     }
   }
 
-  // Returns the destination files that already exist (relative paths).
-  private async getExistingFiles(
+  private resolveProjectPath(
     projectDirectory: string,
-    files: TemplateFile[],
+    relativePath: string,
+  ): string {
+    if (!relativePath.trim() || path.isAbsolute(relativePath)) {
+      throw new Error(
+        `Generated file path must be a non-empty relative path: "${relativePath}".`,
+      );
+    }
+
+    const projectRoot = path.resolve(projectDirectory);
+    const destination = path.resolve(projectRoot, relativePath);
+
+    if (
+      destination !== projectRoot &&
+      !destination.startsWith(`${projectRoot}${path.sep}`)
+    ) {
+      throw new Error(
+        `Generated file path escapes the project directory: "${relativePath}".`,
+      );
+    }
+
+    return destination;
+  }
+
+  private async getExistingFiles(
+    files: { relativePath: string; absolutePath: string }[],
   ): Promise<string[]> {
-    const checks = files.map(async ({ fileName, destination = "" }) => {
+    const checks = files.map(async ({ relativePath, absolutePath }) => {
       try {
-        await access(path.join(projectDirectory, destination, fileName));
-        return destination ? `${destination}/${fileName}` : fileName;
+        await access(absolutePath);
+        return relativePath;
       } catch {
         return null;
       }
@@ -86,32 +113,14 @@ export class FileService {
     return results.filter((file): file is string => file !== null);
   }
 
-  private async copyTemplateFile(
-    projectDirectory: string,
-    fileName: string,
-    language: Language,
-    destination: string,
-    source: string,
+  private async writeFile(
+    filePath: string,
+    contents: string,
   ): Promise<void> {
-    const templateFilePath = path.resolve(
-      this.templatePath,
-      language,
-      source,
-      fileName,
-    );
-
-    const contents = await readFile(templateFilePath, { encoding: "utf-8" });
-
-    const destinationFilePath = path.join(
-      projectDirectory,
-      destination,
-      fileName,
-    );
-
-    await mkdir(path.dirname(destinationFilePath), { recursive: true });
+    await mkdir(path.dirname(filePath), { recursive: true });
 
     // "wx" fails if the file exists, so we never overwrite user files.
-    await writeFile(destinationFilePath, contents, {
+    await writeFile(filePath, contents, {
       encoding: "utf-8",
       flag: "wx",
     });

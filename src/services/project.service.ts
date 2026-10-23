@@ -1,24 +1,31 @@
-import type { Language, TemplateFile } from "@/types";
-import { FileService } from "./file.service";
 import { spawn } from "node:child_process";
+import type { ProjectAnswers } from "../types";
+import { FileService } from "./file.service";
+import { TemplateService } from "./template.service";
 
 export class ProjectService {
   private readonly projectPath: string;
-  private readonly selectedLanguage: Language;
+  private readonly answers: ProjectAnswers;
   private readonly fileService: FileService;
+  private readonly templateService: TemplateService;
 
-  constructor(projectPath: string, selectedLanguage: Language) {
+  constructor(
+    projectPath: string,
+    answers: ProjectAnswers,
+    fileService = new FileService(),
+    templateService = new TemplateService(),
+  ) {
     this.projectPath = projectPath;
-    this.selectedLanguage = selectedLanguage;
-    this.fileService = new FileService();
+    this.answers = answers;
+    this.fileService = fileService;
+    this.templateService = templateService;
   }
 
-  public async createProject(shouldCreateCentralError: boolean): Promise<void> {
-    await this.fileService.createFiles(
-      this.projectPath,
-      this.selectedLanguage,
-      this.getTemplateFiles(shouldCreateCentralError),
-    );
+  public async createProject(): Promise<void> {
+    const files = await this.templateService.buildFilePlan(this.answers);
+
+    // Build the whole plan first, then write it in one pass.
+    await this.fileService.writeFiles(this.projectPath, files);
   }
 
   public async runInstallCommand(): Promise<void> {
@@ -50,42 +57,5 @@ export class ProjectService {
         }
       });
     });
-  }
-
-  // Template folders mirror the new project — source defaults to destination.
-  private getTemplateFiles(shouldCreateCentralError: boolean): TemplateFile[] {
-    const extension = this.selectedLanguage === "typescript" ? "ts" : "js";
-
-    // "No" → the same app, just without the middleware wiring.
-    const appFile: TemplateFile = shouldCreateCentralError
-      ? { fileName: `app.${extension}`, destination: "src" }
-      : { fileName: `app.${extension}`, source: "basic", destination: "src" };
-
-    const files: TemplateFile[] = [
-      { fileName: "package.json" },
-      ...(this.selectedLanguage === "typescript"
-        ? [{ fileName: "tsconfig.json" }]
-        : []),
-      { fileName: `server.${extension}`, destination: "src" },
-      appFile,
-      { fileName: `helpers.${extension}`, destination: "src/utils" },
-      { fileName: `responseHelpers.${extension}`, destination: "src/utils" },
-    ];
-
-    if (shouldCreateCentralError) {
-      files.push(
-        { fileName: `AppError.${extension}`, destination: "src/utils" },
-        {
-          fileName: `error.middleware.${extension}`,
-          destination: "src/middleware",
-        },
-        {
-          fileName: `notFound.middleware.${extension}`,
-          destination: "src/middleware",
-        },
-      );
-    }
-
-    return files;
   }
 }
