@@ -1,17 +1,29 @@
 import { spinner } from "@clack/prompts";
+import type { ProjectAnswers } from "./types";
 import { FileService } from "./services/file.service";
 import { ProjectService } from "./services/project.service";
 import { PromptService } from "./services/prompts.service";
+import { TemplateService } from "./services/template.service";
 
 async function main(): Promise<void> {
   const promptService = new PromptService();
   const fileService = new FileService();
+  const templateService = new TemplateService();
 
   // 1. Collect every answer first — the spinner only starts after all prompts are done
   const projectName = await promptService.askProjectName();
   const language = await promptService.askLanguage();
-  const shouldCreateCentralError = await promptService.askCentralErrorHandler();
-  const shouldInstallDependencies = await promptService.askShouldInstall();
+  const availableFeatures =
+    await templateService.getAvailableFeatures(language);
+  const features = await promptService.askFeatureAnswers(availableFeatures);
+  const installDependencies = await promptService.askShouldInstall();
+
+  const answers: ProjectAnswers = {
+    projectName,
+    language,
+    features,
+    installDependencies,
+  };
 
   // 2. Run the commands behind a spinner
   const loading = spinner();
@@ -19,10 +31,10 @@ async function main(): Promise<void> {
 
   try {
     const projectPath = await fileService.createDirectory(projectName);
-    const projectService = new ProjectService(projectPath, language);
-    await projectService.createProject(shouldCreateCentralError);
+    const projectService = new ProjectService(projectPath, answers);
+    await projectService.createProject();
 
-    if (shouldInstallDependencies) {
+    if (installDependencies) {
       loading.message("Installing dependencies");
       await projectService.runInstallCommand();
     }

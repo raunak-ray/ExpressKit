@@ -1,5 +1,6 @@
 import { cancel, confirm, isCancel, select, text } from "@clack/prompts";
-import type { Language } from "../types";
+import { FEATURES, type Feature } from "../features";
+import type { FeatureAnswers, Language } from "../types";
 
 export class PromptService {
   private readonly LANGUAGE_OPTIONS: {
@@ -39,15 +40,29 @@ export class PromptService {
     return response;
   }
 
-  public async askCentralErrorHandler(): Promise<boolean> {
-    const response = await confirm({
-      message: "Create central error handling middleware?",
-      initialValue: true,
-    })
+  /**
+   * Asks one confirm per registered feature available for the chosen
+   * language. Unavailable features default to false.
+   */
+  public async askFeatureAnswers(
+    availableFeatures: readonly Feature[],
+  ): Promise<FeatureAnswers> {
+    const answers = Object.fromEntries(
+      FEATURES.map((feature) => [feature.id, false]),
+    ) as FeatureAnswers;
 
-    this.handleCancel<boolean>(response);
+    for (const feature of availableFeatures) {
+      const response = await confirm({
+        message: feature.prompt,
+        initialValue: feature.defaultValue,
+      });
 
-    return response;
+      this.handleCancel<boolean>(response);
+
+      answers[feature.id] = response;
+    }
+
+    return answers;
   }
 
   public async askShouldInstall(): Promise<boolean> {
