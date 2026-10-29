@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError, BadRequestError } from "../utils/AppError";
-import { errorResponse } from "../utils/responseHelpers";
 import { getTimeStamp } from "../utils/helpers";
+import { errorResponse } from "../utils/responseHelpers";
 
 // Express error handler — needs all 4 params, that's how Express recognizes it.
 export default function errorMiddleware(
