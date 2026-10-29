@@ -1,9 +1,9 @@
 import { AppError, BadRequestError } from "../utils/AppError.js";
-import { errorResponse } from "../utils/responseHelpers.js";
 import { getTimeStamp } from "../utils/helpers.js";
+import { errorResponse } from "../utils/responseHelpers.js";
 
 // Express error handler — needs all 4 params, that's how Express recognizes it.
-export default function errorMiddleware(error, req, res, next) {
+export default function errorMiddleware(error, req, res, _next) {
   const timeStamp = getTimeStamp();
 
   // Expected errors — log them and send their details
