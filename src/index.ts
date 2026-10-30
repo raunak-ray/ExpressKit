@@ -18,12 +18,16 @@ async function main(): Promise<void> {
   const availableFeatures =
     await templateService.getAvailableFeatures(language);
   const features = await promptService.askFeatureAnswers(availableFeatures);
+  const linter = await promptService.askLinter();
+  const formatter = await promptService.askFormatter();
   const installDependencies = await promptService.askShouldInstall();
 
   const answers: ProjectAnswers = {
     projectName,
     language,
     features,
+    linter,
+    formatter,
     installDependencies,
   };
 

@@ -1,6 +1,6 @@
 import { cancel, confirm, isCancel, select, text } from "@clack/prompts";
 import { FEATURES, type Feature } from "../features.js";
-import type { FeatureAnswers, Language } from "../types.js";
+import type { FeatureAnswers, Formatter, Language, Linter } from "../types.js";
 
 export class PromptService {
   private readonly LANGUAGE_OPTIONS: {
@@ -9,6 +9,25 @@ export class PromptService {
   }[] = [
     { value: "javascript", label: "JavaScript" },
     { value: "typescript", label: "TypeScript" },
+  ];
+
+  private readonly LINTER_OPTIONS: {
+    value: Linter;
+    label: string;
+  }[] = [
+    { value: "none", label: "None" },
+    { value: "eslint", label: "ESLint" },
+    { value: "biome", label: "Biome" },
+    { value: "oxlint", label: "Oxlint" },
+  ];
+
+  private readonly FORMATTER_OPTIONS: {
+    value: Formatter;
+    label: string;
+  }[] = [
+    { value: "none", label: "None" },
+    { value: "prettier", label: "Prettier" },
+    { value: "biome", label: "Biome" },
   ];
 
   public async askProjectName(): Promise<string> {
@@ -63,6 +82,30 @@ export class PromptService {
     }
 
     return answers;
+  }
+
+  public async askLinter(): Promise<Linter> {
+    const response = await select({
+      message: "Which linter would you like to use?",
+      options: this.LINTER_OPTIONS,
+      initialValue: "oxlint",
+    });
+
+    this.handleCancel<Linter>(response);
+
+    return response;
+  }
+
+  public async askFormatter(): Promise<Formatter> {
+    const response = await select({
+      message: "Which formatter would you like to use?",
+      options: this.FORMATTER_OPTIONS,
+      initialValue: "biome",
+    });
+
+    this.handleCancel<Formatter>(response);
+
+    return response;
   }
 
   public async askShouldInstall(): Promise<boolean> {

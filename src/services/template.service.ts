@@ -3,7 +3,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { FEATURES, type Feature } from "../features.js";
 import type {
+  Formatter,
   Language,
+  Linter,
   PackageFragment,
   ProjectAnswers,
   ProjectFileMap,
@@ -34,9 +36,7 @@ export class TemplateService {
     this.templateRoot = path.resolve(serviceDirectory, "../../templates");
   }
 
-  public async getAvailableFeatures(
-    language: Language,
-  ): Promise<Feature[]> {
+  public async getAvailableFeatures(language: Language): Promise<Feature[]> {
     const languageDirectory = path.join(this.templateRoot, language);
 
     let entries;
@@ -50,12 +50,41 @@ export class TemplateService {
     }
 
     const folders = new Set(
-      entries
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name),
+      entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name),
     );
 
     return FEATURES.filter((feature) => folders.has(feature.id));
+  }
+
+  public resolveToolLayers(linter: Linter, formatter: Formatter): string[] {
+    if (linter === "biome" && formatter === "biome") {
+      return ["format/biome/both"];
+    }
+
+    const layers: string[] = [];
+
+    switch (linter) {
+      case "oxlint":
+        layers.push("lint/oxlint");
+        break;
+      case "eslint":
+        layers.push("lint/eslint");
+        break;
+      case "biome":
+        layers.push("lint/biome");
+        break;
+    }
+
+    switch (formatter) {
+      case "prettier":
+        layers.push("format/prettier");
+        break;
+      case "biome":
+        layers.push("format/biome/format");
+        break;
+    }
+
+    return layers;
   }
 
   /**
@@ -63,12 +92,11 @@ export class TemplateService {
    *
    * Base files come first. Each enabled feature is then layered on top:
    * feature files replace base files with the same relative path, while new
-   * paths are added. package.json is the exception — feature package.json
-   * files are fragments merged into the base package.json.
+   * paths are added. Tool layers (linters and formatters) are applied next.
+   * package.json is the exception — feature and tool package.json files are
+   * fragments merged into the base package.json.
    */
-  public async buildFilePlan(
-    answers: ProjectAnswers,
-  ): Promise<ProjectFileMap> {
+  public async buildFilePlan(answers: ProjectAnswers): Promise<ProjectFileMap> {
     const baseFiles = await this.readLayer(answers.language, "base");
     const basePackageSource = baseFiles["package.json"];
 
@@ -90,26 +118,34 @@ export class TemplateService {
         continue;
       }
 
-      const layer = await this.readLayer(answers.language, feature.id);
-      const fragmentSource = layer["package.json"];
+      const applied = await this.applyLayer(
+        path.join(answers.language, feature.id),
+        files,
+        packageJson,
+      );
+      files = applied.files;
+      packageJson = applied.packageJson;
+    }
 
-      if (fragmentSource !== undefined) {
-        const fragment = this.parsePackageFragment(
-          fragmentSource,
-          feature.id,
-        );
+    for (const toolLayer of this.resolveToolLayers(
+      answers.linter,
+      answers.formatter,
+    )) {
+      const applied = await this.applyLayer(toolLayer, files, packageJson);
+      files = applied.files;
+      packageJson = applied.packageJson;
+    }
 
-        packageJson = this.mergePackageJson(
-          packageJson,
-          fragment,
-          feature.id,
-        );
-
-        // The merged package.json is written last, not copied from the layer.
-        delete layer["package.json"];
-      }
-
-      files = { ...files, ...layer };
+    if (answers.linter === "eslint" && answers.formatter === "prettier") {
+      packageJson = this.mergePackageJson(
+        packageJson,
+        {
+          devDependencies: {
+            "eslint-config-prettier": "^10.1.8",
+          },
+        },
+        "eslint-prettier-compatibility",
+      );
     }
 
     files["package.json"] = `${JSON.stringify(packageJson, null, 2)}\n`;
@@ -117,26 +153,47 @@ export class TemplateService {
     return files;
   }
 
-  private async readLayer(
-    language: Language,
-    layerName: string,
-  ): Promise<ProjectFileMap> {
-    const layerDirectory = path.join(
-      this.templateRoot,
-      language,
-      layerName,
-    );
+  private async readLayer(...segments: string[]): Promise<ProjectFileMap> {
+    const layerDirectory = path.join(this.templateRoot, ...segments);
 
     try {
       await access(layerDirectory);
     } catch (error: unknown) {
-      throw new Error(
-        `Template folder not found: "${language}/${layerName}".`,
-        { cause: error },
-      );
+      throw new Error(`Template folder not found: "${segments.join("/")}".`, {
+        cause: error,
+      });
     }
 
     return this.readDirectory(layerDirectory);
+  }
+
+  private async applyLayer(
+    layerPath: string,
+    files: ProjectFileMap,
+    packageJson: PackageJson,
+  ): Promise<{ files: ProjectFileMap; packageJson: PackageJson }> {
+    const layer = await this.readLayer(layerPath);
+    const fragmentSource = layer["package.json"];
+
+    let updatedPackageJson = packageJson;
+
+    if (fragmentSource !== undefined) {
+      const fragment = this.parsePackageFragment(fragmentSource, layerPath);
+
+      updatedPackageJson = this.mergePackageJson(
+        packageJson,
+        fragment,
+        layerPath,
+      );
+
+      // The merged package.json is written last, not copied from the layer.
+      delete layer["package.json"];
+    }
+
+    return {
+      files: { ...files, ...layer },
+      packageJson: updatedPackageJson,
+    };
   }
 
   private async readDirectory(
@@ -153,10 +210,7 @@ export class TemplateService {
         : entry.name;
 
       if (entry.isDirectory()) {
-        Object.assign(
-          files,
-          await this.readDirectory(root, relativePath),
-        );
+        Object.assign(files, await this.readDirectory(root, relativePath));
       } else if (entry.isFile()) {
         files[relativePath] = await readFile(
           path.join(root, relativePath),
