@@ -1,6 +1,8 @@
 import type { FeatureId } from "./features.js";
 
 export type Language = "javascript" | "typescript";
+export type Linter = "oxlint" | "eslint" | "biome" | "none";
+export type Formatter = "prettier" | "biome" | "none";
 
 /** One answer per registered feature. */
 export type FeatureAnswers = Record<FeatureId, boolean>;
@@ -10,6 +12,8 @@ export type ProjectAnswers = {
   projectName: string;
   language: Language;
   features: FeatureAnswers;
+  linter: Linter;
+  formatter: Formatter;
   installDependencies: boolean;
 };
 
