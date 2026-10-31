@@ -2,18 +2,7 @@
 
 Set up a clean Express 5 API in seconds. Pick JavaScript or TypeScript, your linter, and your formatter. Then run it.
 
-<p align="center">
-  <video
-    src="https://github.com/user-attachments/assets/7d4d2bf1-81c5-46ff-aa06-72ec2f9697af"
-    controls
-    autoplay
-    muted
-    loop
-    playsinline
-    width="100%"
-  >
-  </video>
-</p>
+https://github.com/user-attachments/assets/7d4d2bf1-81c5-46ff-aa06-72ec2f9697af
 
 ## Quick start
 
