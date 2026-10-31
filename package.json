@@ -1,6 +1,6 @@
 {
   "name": "express-project-init",
-  "version": "1.2.0",
+  "version": "1.1.0",
   "description": "Create production-ready Express.js API projects with JavaScript or TypeScript using clean, reusable starter templates.",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,10 @@
     "dist",
     "templates",
     "README.md",
-    "LICENSE"
+    "LICENSE.md",
+    "docs/express-project-init-v1.1.0-demo.mp4",
+    "docs/express-project-init-v1.1.0-demo.jpg",
+    "docs/express-project-init-v1.1.0-demo.gif"
   ],
   "engines": {
     "node": ">=20"

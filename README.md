@@ -1,35 +1,42 @@
-# ExpressKit
+# express-project-init
 
-**Scaffold a clean Express API in seconds — JavaScript or TypeScript.**
+Set up a clean Express 5 API in seconds. Pick JavaScript or TypeScript, your linter, and your formatter. Then run it.
 
-[![Watch the ExpressKit demo](docs/demo.jpg)](docs/demo.mp4)
-
-ExpressKit asks a few quick questions, then writes a ready-to-run Express 5 project. Choose JavaScript or TypeScript, optionally add centralized error handling, pick your linter and formatter, and start building.
+<p align="center">
+  <video
+    src="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.mp4"
+    poster="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.jpg"
+    autoplay
+    muted
+    loop
+    playsinline
+    controls
+    width="100%"
+  >
+    <img
+      src="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.gif"
+      alt="express-project-init demo"
+      width="100%"
+    />
+  </video>
+</p>
 
 ## Quick start
 
-Requires **Node.js 20+**.
+Requires Node.js 20 or newer.
 
 ```bash
-npm create expresskit@latest
+npx express-project-init@latest
 ```
 
-Or run it directly:
+It asks six quick questions:
 
-```bash
-npx create-expresskit@latest
-```
-
-Answer the prompts:
-
-```text
-? Project name › my-api
-? Language › TypeScript
-? Create central error handling middleware? › Yes
-? Which linter would you like to use? › ESLint
-? Which formatter would you like to use? › Prettier
-? Install dependencies? › Yes
-```
+1. Project name
+2. JavaScript or TypeScript
+3. Central error handling
+4. Linter
+5. Formatter
+6. Install dependencies
 
 Then:
 
@@ -40,102 +47,45 @@ npm run dev
 
 Open <http://localhost:3000/health>.
 
-Use `.` at the project name prompt to scaffold in the current directory. ExpressKit will not overwrite existing files.
+Use `.` as the project name to set up in the current folder. Existing files are never overwritten.
 
 ## What you get
 
-```text
-my-api/
-├── package.json
-├── tsconfig.json          # TypeScript only
-├── eslint.config.js       # with ESLint
-├── .oxlintrc.json         # with Oxlint
-├── biome.json             # with Biome (linter, formatter, or both)
-├── .prettierrc            # with Prettier
-├── .prettierignore        # with Prettier
-└── src/
-    ├── server.ts
-    ├── app.ts
-    ├── middleware/        # with the optional error handler
-    │   ├── error.middleware.ts
-    │   └── notFound.middleware.ts
-    └── utils/
-        ├── helpers.ts
-        ├── responseHelpers.ts
-        └── AppError.ts    # with the optional error handler
-```
+- A small Express 5 API with a `/health` route
+- JavaScript or TypeScript
+- Optional central error handling with one response format
+- ESLint, Biome, or Oxlint
+- Prettier or Biome
+- Real config files, dependencies, and npm scripts
+- Dependencies installed for you, if you want
 
-JavaScript projects use the same layout with `.js` files and no `tsconfig.json`.
+TypeScript projects also get `tsconfig.json` and `npm run typecheck`.
 
-### Scripts
+## Scripts
 
-| Command | Provider | Description |
-| --- | --- | --- |
-| `npm run dev` | Core | Start development server with file watching |
-| `npm start` | Core | Run the application |
-| `npm run typecheck` | Core (TS) | Run TypeScript compiler checks (`tsc --noEmit`) |
-| `npm run lint` | ESLint / Biome / Oxlint | Lint source files |
-| `npm run lint:fix` | ESLint / Biome / Oxlint | Auto-fix linting issues |
-| `npm run format` | Prettier / Biome | Format source files |
-| `npm run format:check` | Prettier / Biome | Check source files for formatting issues |
-| `npm run check` | Biome (both) | Run formatting check, import sorting, and linting |
+The scripts you get depend on your choices.
 
-## Linters and formatters
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the API and watch for changes |
+| `npm start` | Run the API |
+| `npm run lint` | Check your code |
+| `npm run format` | Format your code |
+| `npm run typecheck` | Check TypeScript types |
 
-ExpressKit supports modern, lightning-fast linting and formatting tools:
+## Publish
 
-- **Linters**:
-  - **ESLint**: Industry-standard linter configured with ESLint 9+ flat config (`eslint.config.js`), Node globals, and TypeScript support via `typescript-eslint`.
-  - **Biome**: Rust-powered linter with instant feedback and safe fixes.
-  - **Oxlint**: High-speed Rust-based linter from the OXC project with `.oxlintrc.json`.
-  - **None**: Skip linter setup.
-
-- **Formatters**:
-  - **Prettier**: Opinionated code formatter with `.prettierrc` and `.prettierignore`.
-  - **Biome**: High-performance code formatter configured with 2-space indentation.
-  - **None**: Skip formatter setup.
-
-### Tool combinations
-
-- **Biome for both linting & formatting**: Generates a unified `biome.json` with both features enabled, plus `lint`, `lint:fix`, `format`, `format:check`, and `check` scripts.
-- **ESLint + Prettier**: Automatically installs and configures `eslint-config-prettier` to disable ESLint rules that might conflict with Prettier.
-
-## Error handling
-
-With the error handler enabled, throw `BadRequestError`, `UnauthorizedError`, or `NotFoundError` from any route and one middleware formats the response:
-
-```json
-{
-  "success": false,
-  "message": "Route not found",
-  "code": "NOT_FOUND"
-}
-```
-
-Successful responses use the same envelope with `success: true` and `data`.
-
-## How it works
-
-Projects are assembled from a base template plus optional feature and tool layers. Feature and tool files replace base files at the same path, and `package.json` fragments are merged into the base manifest.
-
-## Local development
+Commit your changes first. If this version is already on npm, bump it with `npm version patch` before publishing.
 
 ```bash
-npm install
-npm run build
-npm link
+npm login
+npm pack --dry-run   # check what goes into the package
+npm publish
+npm view express-project-init version
 ```
 
-Then, in a separate directory:
-
-```bash
-mkdir -p /tmp/expresskit-test
-cd /tmp/expresskit-test
-create-expresskit
-```
-
-Rebuild with `npm run build` after changing `src/`; the linked command picks up the new `dist/` automatically. Remove the global link with `npm unlink -g create-expresskit`.
+`npm publish` builds the package first.
 
 ## License
 
-MIT
+[MIT](LICENSE.md) © 2026 Raunak Ray
