@@ -4,20 +4,14 @@ Set up a clean Express 5 API in seconds. Pick JavaScript or TypeScript, your lin
 
 <p align="center">
   <video
-    src="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.mp4"
-    poster="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.jpg"
+    src="https://github.com/user-attachments/assets/7d4d2bf1-81c5-46ff-aa06-72ec2f9697af"
+    controls
     autoplay
     muted
     loop
     playsinline
-    controls
     width="100%"
   >
-    <img
-      src="https://cdn.jsdelivr.net/gh/raunak-ray/ExpressKit@main/docs/express-project-init-v1.1.0-demo.gif"
-      alt="express-project-init demo"
-      width="100%"
-    />
   </video>
 </p>
 
